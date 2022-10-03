@@ -1,12 +1,15 @@
 package statisticselectricityimbalancexls;
 
 import org.apache.poi.ss.usermodel.*;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.time.LocalDate;
 
 public class App {
 
@@ -16,7 +19,6 @@ public class App {
 
         try {
             url = new URL(getUrl());
-
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -64,24 +66,18 @@ public class App {
     }
 
     public static String getUrl() {
-        LocalDate localDate = LocalDate.now();
-        int year = localDate.getYear();
-        int monthValue = localDate.getMonthValue();
-        String dayOfMonth;
-
-        if (localDate.getDayOfMonth() != 1 && localDate.getDayOfMonth() < 10) {
-            dayOfMonth = "0" + (localDate.getDayOfMonth() - 1);
-        } else {
-            dayOfMonth = "" + (localDate.getDayOfMonth() - 1);
+        final String urlSite = "https://www.ote-cr.cz/en/statistics/electricity-imbalances";
+        String url = "";
+        try {
+            final Document document = Jsoup.connect(urlSite).get();
+            Element link = document.select("p.report_attachment_links > a").first();
+            if (link != null) {
+                url = "https://www.ote-cr.cz" + link.attr("href");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        return ("https://www.ote-cr.cz/pubweb/attachments/05_09_12/"
-                + year + "/month"
-                + monthValue + "/day"
-                + dayOfMonth + "/Imbalances_"
-                + dayOfMonth + "_"
-                + monthValue + "_"
-                + year + "_V0_EN.xls");
+        return url;
     }
 }
 
